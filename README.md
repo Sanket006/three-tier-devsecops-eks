@@ -3,7 +3,7 @@
 [![LinkedIn](https://img.shields.io/badge/Connect%20with%20me%20on-LinkedIn-blue.svg)](https://www.linkedin.com/in/aman-devops/)
 [![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/invite/jdzF8kTtw2)
 [![Medium](https://img.shields.io/badge/Medium-12100E?style=for-the-badge&logo=medium&logoColor=white)](https://medium.com/@amanpathakdevops)
-[![GitHub Stars](https://img.shields.io/github/stars/AmanPathak-DevOps/End-to-End-Kubernetes-Three-Tier-DevSecOps-Project.svg?style=social)](https://github.com/AmanPathak-DevOps)
+[![GitHub Stars](https://img.shields.io/github/stars/Sanket006/three-tier-devsecops-eks.svg?style=social)](https://github.com/Sanket006/three-tier-devsecops-eks)
 [![AWS](https://img.shields.io/badge/AWS-Powered-orange?logo=amazon-aws)](https://aws.amazon.com)
 [![Terraform](https://img.shields.io/badge/IaC-Terraform-blueviolet?logo=terraform)](https://www.terraform.io)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
@@ -463,6 +463,7 @@ As required by the Apache 2.0 License:
 - ✅ All original author credits remain intact throughout the documentation.
 
 > **Original Project:** [End-to-End-Kubernetes-Three-Tier-DevSecOps-Project](https://github.com/AmanPathak-DevOps/End-to-End-Kubernetes-Three-Tier-DevSecOps-Project) by [Aman Pathak](https://www.linkedin.com/in/aman-devops/)
+> **This Repository:** [three-tier-devsecops-eks](https://github.com/Sanket006/three-tier-devsecops-eks)
 
 ---
 

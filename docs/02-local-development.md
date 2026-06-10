@@ -45,8 +45,8 @@ This method spins up all three services (MongoDB, Backend, Frontend) in containe
 ### Step 1 — Clone the Repository
 
 ```bash
-git clone https://github.com/AmanPathak-DevOps/End-to-End-Kubernetes-Three-Tier-DevSecOps-Project.git
-cd End-to-End-Kubernetes-Three-Tier-DevSecOps-Project
+git clone https://github.com/Sanket006/three-tier-devsecops-eks.git
+cd three-tier-devsecops-eks
 ```
 
 ### Step 2 — Navigate to the Application Code
@@ -133,8 +133,8 @@ This method runs the backend and frontend directly on your host machine.
 ### Step 1 — Clone the Repository
 
 ```bash
-git clone https://github.com/AmanPathak-DevOps/End-to-End-Kubernetes-Three-Tier-DevSecOps-Project.git
-cd End-to-End-Kubernetes-Three-Tier-DevSecOps-Project
+git clone https://github.com/Sanket006/three-tier-devsecops-eks.git
+cd three-tier-devsecops-eks
 ```
 
 ### Step 2 — Start the Backend Server

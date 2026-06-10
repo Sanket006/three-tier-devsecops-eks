@@ -92,7 +92,7 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
 1. Go to **Settings → Repositories → Connect Repo**
 2. Fill in the details:
    - **Connection method:** HTTPS
-   - **Repository URL:** `https://github.com/AmanPathak-DevOps/End-to-End-Kubernetes-Three-Tier-DevSecOps-Project.git`
+   - **Repository URL:** `https://github.com/Sanket006/three-tier-devsecops-eks.git`
    - **Username:** Your GitHub username
    - **Password:** Your GitHub Personal Access Token
 3. Click **Connect**
