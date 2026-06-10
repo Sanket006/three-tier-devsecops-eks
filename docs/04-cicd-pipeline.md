@@ -52,11 +52,15 @@ Go to **Jenkins → Manage Jenkins → Credentials** and add the following:
 |---|---|---|
 | `GITHUB` | Username with Password | GitHub username + Personal Access Token |
 | `github` | Secret Text | GitHub Personal Access Token (for git push) |
+| `GIT_USER_EMAIL` | Secret Text | Your GitHub email address (used for git commit author) |
 | `ACCOUNT_ID` | Secret Text | Your AWS Account ID |
 | `ECR_REPO1` | Secret Text | ECR repository name for frontend |
 | `ECR_REPO2` | Secret Text | ECR repository name for backend |
 | `aws-creds` | AWS Credentials | AWS Access Key + Secret Key |
 | `sonar-token` | Secret Text | SonarQube authentication token |
+
+> ⚠️ The `GIT_USER_EMAIL` credential is injected at runtime via `withCredentials` in both Jenkinsfiles.
+> Do **not** hardcode your email in the pipeline files.
 
 ---
 
@@ -81,21 +85,22 @@ aws ecr create-repository --repository-name backend --region us-east-1
 | Stage | Description |
 |---|---|
 | **Cleaning Workspace** | Clears old build artifacts |
-| **Checkout from Git** | Clones the repository |
-| **SonarQube Analysis** | Runs static code analysis on `Application-Code/frontend` |
-| **Quality Check** | Waits for SonarQube quality gate result |
-| **OWASP Dependency-Check Scan** | Scans npm dependencies for CVEs |
-| **Trivy File Scan** | Scans the filesystem for vulnerabilities |
-| **Docker Image Build** | Builds Docker image from `frontend/Dockerfile` |
-| **ECR Image Pushing** | Tags and pushes image to AWS ECR |
-| **TRIVY Image Scan** | Scans the ECR Docker image for CVEs |
-| **Update Deployment File** | Updates `image:tag` in `Kubernetes-Manifests-file/Frontend/deployment.yaml` and pushes to GitHub |
+| **Checkout from Git** | Clones `https://github.com/Sanket006/three-tier-devsecops-eks.git` |
+| **SonarQube Analysis** | Runs static analysis on `Application-Code/frontend` (project key: `three-tier-frontend`) |
+| **Quality Check** | Waits for SonarQube quality gate result using `sonar-token` |
+| **OWASP Dependency-Check Scan** | Scans npm dependencies for CVEs using `DP-Check` |
+| **Trivy File Scan** | Scans `Application-Code/frontend` filesystem → saves `trivyfs.txt` |
+| **Docker Image Build** | Prunes Docker system, then builds image tagged as `ECR_REPO1` |
+| **ECR Image Pushing** | Logs into ECR, tags image with `BUILD_NUMBER`, pushes to `REPOSITORY_URI` |
+| **TRIVY Image Scan** | Scans the pushed ECR image for CVEs → saves `trivyimage.txt` |
+| **Checkout Code** | Re-clones the repo to access Kubernetes manifests |
+| **Update Deployment File** | Updates `image:tag` in `Kubernetes-Manifests-file/Frontend/deployment.yaml` and pushes to `HEAD:master` |
 
 ### Create the Pipeline in Jenkins
 
-1. Click **New Item** → Enter name: `Three-Tier-Frontend` → Select **Pipeline**
+1. Click **New Item** → Enter name: `Frontend-Pipeline` → Select **Pipeline**
 2. Under **Pipeline**, set **Definition** to `Pipeline script from SCM`
-3. Set **SCM** to `Git` and enter your repository URL
+3. Set **SCM** to `Git` and enter: `https://github.com/Sanket006/three-tier-devsecops-eks.git`
 4. Set **Credentials** to `GITHUB`
 5. Set **Script Path** to `Jenkins-Pipeline-Code/Jenkinsfile-Frontend`
 6. Click **Save** and then **Build Now**
@@ -104,13 +109,13 @@ aws ecr create-repository --repository-name backend --region us-east-1
 
 ## Pipeline 2 — Backend CI/CD (`Jenkinsfile-Backend`)
 
-The backend pipeline mirrors the frontend with the same stages, but operates on `Application-Code/backend` and uses `ECR_REPO2` for the backend image.
+The backend pipeline mirrors the frontend with the same stages, but operates on `Application-Code/backend`, uses SonarQube project key `three-tier-backend`, and uses `ECR_REPO2` for the backend image. The manifest update targets `Kubernetes-Manifests-file/Backend/deployment.yaml`.
 
 ### Create the Pipeline in Jenkins
 
-1. Click **New Item** → Enter name: `Three-Tier-Backend` → Select **Pipeline**
+1. Click **New Item** → Enter name: `Backend-Pipeline` → Select **Pipeline**
 2. Under **Pipeline**, set **Definition** to `Pipeline script from SCM`
-3. Set **SCM** to `Git` and enter your repository URL
+3. Set **SCM** to `Git` and enter: `https://github.com/Sanket006/three-tier-devsecops-eks.git`
 4. Set **Credentials** to `GITHUB`
 5. Set **Script Path** to `Jenkins-Pipeline-Code/Jenkinsfile-Backend`
 6. Click **Save** and then **Build Now**
@@ -140,7 +145,7 @@ This pipeline lets you **provision, plan, or destroy** the AWS EKS cluster via a
 
 ### Create the Pipeline in Jenkins
 
-1. Click **New Item** → Enter name: `Three-Tier-EKS` → Select **Pipeline**
+1. Click **New Item** → Enter name: `EKS-Pipeline` → Select **Pipeline**
 2. Under **Pipeline**, set **Definition** to `Pipeline script from SCM`
 3. Set **Script Path** to `Jenkins-Pipeline-Code/Jenkinsfile-EKS`
 4. Click **Save**

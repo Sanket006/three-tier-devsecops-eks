@@ -113,7 +113,7 @@ You need to create two ArgoCD applications — one for the frontend and one for 
    | **Application Name** | `three-tier-frontend` |
    | **Project** | `default` |
    | **Sync Policy** | `Automatic` |
-   | **Repository URL** | Your GitHub repo URL |
+   | **Repository URL** | `https://github.com/Sanket006/three-tier-devsecops-eks.git` |
    | **Revision** | `HEAD` |
    | **Path** | `Kubernetes-Manifests-file/Frontend` |
    | **Cluster URL** | `https://kubernetes.default.svc` |
@@ -131,7 +131,7 @@ You need to create two ArgoCD applications — one for the frontend and one for 
    | **Application Name** | `three-tier-backend` |
    | **Project** | `default` |
    | **Sync Policy** | `Automatic` |
-   | **Repository URL** | Your GitHub repo URL |
+   | **Repository URL** | `https://github.com/Sanket006/three-tier-devsecops-eks.git` |
    | **Revision** | `HEAD` |
    | **Path** | `Kubernetes-Manifests-file/Backend` |
    | **Cluster URL** | `https://kubernetes.default.svc` |
