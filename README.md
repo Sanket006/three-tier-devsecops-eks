@@ -463,6 +463,7 @@ As required by the Apache 2.0 License:
 - ✅ All original author credits remain intact throughout the documentation.
 
 > **Original Project:** [End-to-End-Kubernetes-Three-Tier-DevSecOps-Project](https://github.com/AmanPathak-DevOps/End-to-End-Kubernetes-Three-Tier-DevSecOps-Project) by [Aman Pathak](https://www.linkedin.com/in/aman-devops/)
+
 > **This Repository:** [three-tier-devsecops-eks](https://github.com/Sanket006/three-tier-devsecops-eks)
 
 ---
