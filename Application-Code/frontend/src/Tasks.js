@@ -7,62 +7,83 @@ import {
 } from "./services/taskServices";
 
 class Tasks extends Component {
-    state = { tasks: [], currentTask: "" };
+    state = {
+        tasks: [],
+        title: "",
+        description: "",
+        category: "To-Do",
+        color: "#6366f1", // default Indigo
+        isModalOpen: false,
+    };
 
-    async componentDidMount() {
+    loadTasks = async () => {
         try {
             const { data } = await getTasks();
-            this.setState({ tasks: data });
+            this.setState({ tasks: Array.isArray(data) ? data : [] });
         } catch (error) {
-            console.log(error);
+            console.log("Error loading tasks:", error);
+            this.setState({ tasks: [] });
         }
+    };
+
+    async componentDidMount() {
+        await this.loadTasks();
     }
 
-    handleChange = ({ currentTarget: input }) => {
-        this.setState({ currentTask: input.value });
+    handleInputChange = (e) => {
+        const { name, value } = e.target;
+        this.setState({ [name]: value });
     };
 
-    handleSubmit = async (e) => {
+    handleSubmitTask = async (e) => {
         e.preventDefault();
-        const originalTasks = this.state.tasks;
-        try {
-            const { data } = await addTask({ task: this.state.currentTask });
-            const tasks = originalTasks;
-            tasks.push(data);
-            this.setState({ tasks, currentTask: "" });
-        } catch (error) {
-            console.log(error);
-        }
-    };
+        const { title, description, category, color, tasks } = this.state;
+        if (!title.trim()) return;
 
-    handleUpdate = async (currentTask) => {
-        const originalTasks = this.state.tasks;
         try {
-            const tasks = [...originalTasks];
-            const index = tasks.findIndex((task) => task._id === currentTask);
-            tasks[index] = { ...tasks[index] };
-            tasks[index].completed = !tasks[index].completed;
-            this.setState({ tasks });
-            await updateTask(currentTask, {
-                completed: tasks[index].completed,
+            const { data } = await addTask({
+                title,
+                description,
+                category,
+                color,
+            });
+            this.setState({
+                tasks: [...tasks, data],
+                title: "",
+                description: "",
+                category: "To-Do",
+                color: "#6366f1",
+                isModalOpen: false,
             });
         } catch (error) {
-            this.setState({ tasks: originalTasks });
-            console.log(error);
+            console.log("Error adding task:", error);
         }
     };
 
-    handleDelete = async (currentTask) => {
-        const originalTasks = this.state.tasks;
+    handleMoveTask = async (id, newCategory) => {
+        const { tasks } = this.state;
+        const originalTasks = [...tasks];
         try {
-            const tasks = originalTasks.filter(
-                (task) => task._id !== currentTask
+            const updatedTasks = tasks.map((t) =>
+                t._id === id ? { ...t, category: newCategory, completed: newCategory === "Done" } : t
             );
-            this.setState({ tasks });
-            await deleteTask(currentTask);
+            this.setState({ tasks: updatedTasks });
+            await updateTask(id, { category: newCategory });
         } catch (error) {
+            console.log("Error moving task:", error);
             this.setState({ tasks: originalTasks });
-            console.log(error);
+        }
+    };
+
+    handleDeleteTask = async (id) => {
+        const { tasks } = this.state;
+        const originalTasks = [...tasks];
+        try {
+            this.setState({ tasks: tasks.filter((t) => t._id !== id) });
+            await deleteTask(id);
+        } catch (error) {
+            console.log("Error deleting task:", error);
+            this.setState({ tasks: originalTasks });
         }
     };
 }

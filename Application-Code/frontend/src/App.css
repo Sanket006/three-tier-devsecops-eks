@@ -1,69 +1,485 @@
-.app {
+/* TaskFlow App Styling - Premium Dark Mode Glassmorphism */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --bg-primary: #0b0f19;
+    --bg-secondary: #121826;
+    --glass-bg: rgba(18, 24, 38, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --text-main: #f3f4f6;
+    --text-muted: #9ca3af;
+    --color-primary: #6366f1; /* Indigo */
+    --color-primary-glow: rgba(99, 102, 241, 0.3);
+    --color-success: #10b981; /* Emerald */
+    --color-error: #ef4444; /* Rose */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-main);
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow-x: hidden;
+}
+
+/* Gradient background glow effects */
+.taskflow-container {
+    min-height: 100vh;
+    padding: 2rem;
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    gap: 2rem;
 }
 
-.app-header {
-    background-color: #282c34;
+/* Glass panel utility */
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Header Section */
+.tf-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.tf-logo-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.tf-logo-icon {
+    font-size: 1.75rem;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.5));
+}
+
+.tf-logo-text {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    background: linear-gradient(135deg, #f3f4f6, #9ca3af);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.tf-add-btn {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
     color: white;
-    padding: 10px 20px;
-    text-align: center;
-    font-size: 1.5rem;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px 0 var(--color-primary-glow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.main-content {
-    flex-grow: 1;
+.tf-add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.45);
+}
+
+/* Dashboard & Statistics */
+.tf-dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+.tf-stat-card {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tf-stat-title {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tf-stat-value {
+    font-size: 2.25rem;
+    font-weight: 700;
+}
+
+.text-emerald {
+    color: var(--color-success);
+}
+
+.tf-progress-card {
+    grid-column: span 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+@media (min-width: 768px) {
+    .tf-progress-card {
+        grid-column: span 2;
+    }
+}
+
+.tf-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.tf-progress-percentage {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.tf-progress-track {
+    width: 100%;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 9999px;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+}
+
+.tf-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), #a855f7);
+    border-radius: 9999px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 8px var(--color-primary-glow);
+}
+
+/* Kanban Board Columns */
+.tf-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.tf-column {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-height: 500px;
+}
+
+.tf-column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 0.75rem;
+}
+
+.tf-column-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.tf-column-count {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.tf-column-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Card Styling */
+.tf-card {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tf-card:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.5);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.tf-card-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-main);
+    line-height: 1.4;
+}
+
+.tf-card-desc {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.tf-card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.tf-card-action-btn {
+    background: transparent;
+    border: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.tf-card-action-btn.next {
+    background: rgba(99, 102, 241, 0.15);
+    color: #818cf8;
+}
+
+.tf-card-action-btn.next:hover {
+    background: var(--color-primary);
+    color: white;
+}
+
+.tf-card-action-btn.prev {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+}
+
+.tf-card-action-btn.prev:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text-main);
+}
+
+.tf-card-action-btn.delete {
+    color: rgba(239, 68, 68, 0.7);
+}
+
+.tf-card-action-btn.delete:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--color-error);
+}
+
+/* Done Card opacity tweak */
+.done-card {
+    background: rgba(18, 24, 38, 0.35);
+}
+
+.done-card .tf-card-title {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+/* Modal Dialog Overlay */
+.tf-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(3, 7, 18, 0.6);
+    backdrop-filter: blur(8px);
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    z-index: 1000;
 }
 
-.todo-container {
+.tf-modal {
     width: 100%;
-    max-width: 600px;
-    padding: 20px;
+    max-width: 500px;
+    padding: 2rem;
+    animation: modalSlide 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.task-form {
+@keyframes modalSlide {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.tf-modal-header {
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.task-input {
-    flex-grow: 1;
-}
-
-.add-task-btn, .delete-task-btn {
-    flex-shrink: 0;
-    box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
-    transition: transform 0.1s ease-in-out;
-}
-
-.add-task-btn:hover, .delete-task-btn:hover {
-    transform: scale(1.05);
-}
-
-.tasks-list {
-    margin-top: 10px;
-}
-
-.task-item {
-    display: flex;
+    justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
-    padding: 10px;
-    box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
 }
 
-.task-text {
-    flex-grow: 1;
-    margin: 0 10px;
+.tf-modal-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
 }
 
-.task-text.completed {
-    text-decoration: line-through;
+.tf-close-modal {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.25rem;
+    cursor: pointer;
 }
 
+.tf-close-modal:hover {
+    color: var(--text-main);
+}
+
+/* Modal Forms */
+.tf-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tf-modal-form input,
+.tf-modal-form textarea,
+.tf-modal-form select {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.tf-modal-form input:focus,
+.tf-modal-form textarea:focus,
+.tf-modal-form select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-group.half {
+    flex: 1;
+}
+
+/* Color Picker */
+.tf-color-picker {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    height: 100%;
+    min-height: 42px;
+}
+
+.tf-color-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.tf-color-dot:hover {
+    transform: scale(1.15);
+}
+
+.tf-color-dot.active {
+    border-color: white;
+    transform: scale(1.2);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Modal Actions */
+.tf-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.tf-cancel-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    border: 1px solid var(--glass-border);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.tf-cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+}
+
+.tf-submit-btn {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 10px var(--color-primary-glow);
+    transition: all 0.2s ease;
+}
+
+.tf-submit-btn:hover {
+    background: #4f46e5;
+    box-shadow: 0 6px 14px var(--color-primary-glow);
+}
