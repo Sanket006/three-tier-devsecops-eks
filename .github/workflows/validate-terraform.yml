@@ -1,9 +1,11 @@
 name: 'EKS-Terraform-Plan'
 
 on:
-  push:
-    branches: 
-      - '**'
+  workflow_dispatch:   # Manually trigger from GitHub Actions UI
+  # Uncomment below to auto-run on every push to all branches:
+  # push:
+  #   branches:
+  #     - '**'
 
 
 env: 
