@@ -8,7 +8,7 @@
 [![Terraform](https://img.shields.io/badge/IaC-Terraform-blueviolet?logo=terraform)](https://www.terraform.io)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 
-![Three-Tier Banner](assets/Three-Tier.png)
+![Three-Tier Banner](assets/Three-Tier.gif)
 
 > A production-grade, cloud-native deployment of a MERN stack application on **AWS EKS** with full **CI/CD automation**, **DevSecOps security scanning**, **GitOps delivery**, and **real-time monitoring** — built for engineers who want the complete picture.
 
