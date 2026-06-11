@@ -58,6 +58,7 @@ Go to **Jenkins → Manage Jenkins → Credentials** and add the following:
 | `ECR_REPO2` | Secret Text | ECR repository name for backend |
 | `aws-creds` | AWS Credentials | AWS Access Key + Secret Key |
 | `sonar-token` | Secret Text | SonarQube authentication token |
+| `NVD_API_KEY` | Secret Text | NVD API Key (speeds up OWASP Dependency-Check downloads) |
 
 > ⚠️ The `GIT_USER_EMAIL` credential is injected at runtime via `withCredentials` in both Jenkinsfiles.
 > Do **not** hardcode your email in the pipeline files.
