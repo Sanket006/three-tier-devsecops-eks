@@ -161,6 +161,53 @@ This pipeline lets you **provision, plan, or destroy** the AWS EKS cluster via a
 
 ---
 
+## 🔗 GitHub Webhook Integration
+
+To configure automated pipeline triggers so that every code push to your GitHub repository automatically starts the Frontend and Backend pipelines:
+
+### 1. Enable Webhook Trigger in Jenkins
+For both the **Frontend-Pipeline** and **Backend-Pipeline** jobs in Jenkins:
+1. Open the pipeline job and click **Configure**.
+2. Go to the **Build Triggers** tab.
+3. Check the box for **GitHub hook trigger for GITScm polling**.
+4. Click **Save**.
+
+### 2. Configure the Webhook in GitHub
+1. Go to your GitHub repository: `https://github.com/Sanket006/three-tier-devsecops-eks`
+2. Click on **Settings** (top navigation bar) → **Webhooks** (left sidebar).
+3. Click the **Add webhook** button.
+4. Set the following details:
+   * **Payload URL:** `http://<JENKINS_PUBLIC_IP>:8080/github-webhook/` 
+     *(⚠️ **Important:** The trailing slash `/` at the end of the URL is mandatory).*
+   * **Content type:** `application/json`
+   * **Secret:** *(Leave blank unless configured in Jenkins)*
+   * **Which events:** Select **Just the push event**.
+   * **Active:** Ensure the checkbox is checked.
+5. Click **Add webhook**.
+
+> 💡 **Note for Private Environments:** 
+> If your Jenkins server is running in a private subnet and is not publicly accessible from the internet, GitHub will not be able to reach your Jenkins URL. You can use utility tools like **ngrok** or **Smee.io** to temporarily forward webhooks from a public endpoint to your local/private Jenkins server port 8080 during development.
+
+---
+
+## 🦊 SonarQube Webhook Integration
+
+In the pipeline's **Quality Check** stage, the `waitForQualityGate` step pauses the pipeline run and waits for SonarQube to send a callback report back to Jenkins. Without a configured webhook, the pipeline will remain paused and eventually timeout.
+
+To configure the callback webhook in SonarQube:
+1. Open your **SonarQube dashboard** (typically at `http://<JENKINS_PUBLIC_IP>:9000`).
+2. Log in with your admin credentials.
+3. Go to **Administration** (top navigation bar) → **Configuration** → **Webhooks**.
+4. Click the **Create** button (top right).
+5. Set the following details:
+   * **Name:** `Jenkins-Webhook`
+   * **URL:** `http://<JENKINS_PUBLIC_IP>:8080/sonarqube-webhook/`
+     *(⚠️ **Important:** The trailing slash `/` at the end of the URL is mandatory).*
+   * **Secret:** *(Leave blank)*
+6. Click **Create**.
+
+---
+
 ## 🔁 End-to-End Automation Flow
 
 Once both pipelines are set up, every code push triggers:
