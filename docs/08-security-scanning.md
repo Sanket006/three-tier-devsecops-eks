@@ -77,7 +77,16 @@ Default credentials: `admin` / `admin`
 1. In SonarQube, go to **Administration → Security → Users → Tokens**
 2. Generate a token and save it
 3. In Jenkins, go to **Manage Jenkins → Configure System → SonarQube Servers**
-4. Add server URL and the token credential
+4. Add the server URL and the token credential.
+5. **Set up the Webhook Callback (Critical):**
+   * In SonarQube, go to **Administration → Configuration → Webhooks**.
+   * Click **Create**.
+   * Name: `Jenkins-Webhook`
+   * URL: `http://<JENKINS_PUBLIC_IP>:8080/sonarqube-webhook/` *(Note: The trailing slash `/` is required)*.
+   * Click **Create**.
+
+> 💡 **Why is this Webhook required?**  
+> In the pipeline's **Quality Check** stage, the `waitForQualityGate` step pauses Jenkins and waits for SonarQube to callback with the analysis result. Without this webhook, Jenkins will never receive the response and the pipeline will hang or timeout.
 
 ### Pipeline Configuration
 
