@@ -22,7 +22,7 @@ The deployment includes:
 - EKS cluster provisioned and running (see [Infrastructure Provisioning](./03-infrastructure-provisioning.md))
 - `kubectl` configured to point to the EKS cluster:
   ```bash
-  aws eks update-kubeconfig --region us-east-1 --name Three-Tier-Cluster
+  aws eks update-kubeconfig --region us-east-1 --name eks-cluster
   kubectl get nodes   # Should show Running nodes
   ```
 - Docker images built and pushed to ECR (see [CI/CD Pipeline Setup](./04-cicd-pipeline.md))
@@ -59,7 +59,7 @@ helm repo update
 # Install the controller
 helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   -n kube-system \
-  --set clusterName=Three-Tier-Cluster \
+  --set clusterName=eks-cluster \
   --set serviceAccount.create=false \
   --set serviceAccount.name=aws-load-balancer-controller
 ```
@@ -193,15 +193,20 @@ kubectl get ingress -n three-tier
 Wait for the `ADDRESS` field to populate (may take 2–3 minutes):
 
 ```
-NAME     CLASS   HOSTS                      ADDRESS                                          PORTS
-mainlb   alb     amanpathakdevops.study     k8s-threetier-xxxx.us-east-1.elb.amazonaws.com   80
+NAME     CLASS   HOSTS                        ADDRESS                                          PORTS
+mainlb   alb     devopswithsanket.space       k8s-threetier-xxxx.us-east-1.elb.amazonaws.com   80
 ```
 
 ---
 
-## Step 9 — Configure DNS (Optional)
+## Step 9 — Configure DNS
 
-To use a custom domain, create a CNAME record in your DNS provider pointing your domain to the ALB DNS name.
+Create a **CNAME** record in your DNS provider (`devopswithsanket.space`) pointing to the ALB DNS name from the ingress output above.
+
+Example (Route 53 or any DNS provider):
+```
+devopswithsanket.space  CNAME  k8s-threetier-xxxx.us-east-1.elb.amazonaws.com
+```
 
 ---
 

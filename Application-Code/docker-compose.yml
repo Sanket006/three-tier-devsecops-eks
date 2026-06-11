@@ -5,7 +5,7 @@ services:
     image: mongo:latest
     container_name: tf-mongodb
     ports:
-      - "27018:27017"
+      - "27017:27017"
     volumes:
       - tf-mongo-data:/data/db
 

@@ -62,10 +62,12 @@ SonarQube is typically run as a Docker container on the Jenkins server:
 
 ```bash
 docker run -d \
-  --name sonarqube \
+  --name sonar \
   -p 9000:9000 \
-  sonarqube:lts-community
+  sonarqube:26.6.0.123539-community
 ```
+
+> 💡 The `lts-community` tag is no longer maintained. Use the pinned monthly release tag above (June 2026).
 
 Access the UI at `http://<JENKINS_SERVER_IP>:9000`  
 Default credentials: `admin` / `admin`
@@ -163,12 +165,21 @@ The scan results are saved to `trivyfs.txt` and archived as a build artifact.
 ### Install Trivy on Jenkins Server
 
 ```bash
-# On the Jenkins EC2 server (Amazon Linux)
-sudo rpm -ivh https://github.com/aquasecurity/trivy/releases/download/v0.50.1/trivy_0.50.1_Linux-64bit.rpm
+# On the Jenkins EC2 server (Ubuntu 22.04) — modern apt method
+sudo apt-get install wget apt-transport-https gnupg -y
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | \
+  gpg --dearmor | \
+  sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | \
+  sudo tee -a /etc/apt/sources.list.d/trivy.list
+sudo apt update
+sudo apt install trivy -y
 
 # Verify installation
 trivy --version
 ```
+
+> ⚠️ The old `apt-key add` method is deprecated on Ubuntu 22.04+. The `signed-by` keyring method above is the current security best practice. This is already handled automatically by `tools-install.sh`.
 
 ---
 

@@ -5,7 +5,8 @@
 [![Medium](https://img.shields.io/badge/Medium-12100E?style=for-the-badge&logo=medium&logoColor=white)](https://medium.com/@amanpathakdevops)
 [![GitHub Stars](https://img.shields.io/github/stars/Sanket006/three-tier-devsecops-eks.svg?style=social)](https://github.com/Sanket006/three-tier-devsecops-eks)
 [![AWS](https://img.shields.io/badge/AWS-Powered-orange?logo=amazon-aws)](https://aws.amazon.com)
-[![Terraform](https://img.shields.io/badge/IaC-Terraform-blueviolet?logo=terraform)](https://www.terraform.io)
+[![Terraform](https://img.shields.io/badge/IaC-Terraform%201.15-blueviolet?logo=terraform)](https://www.terraform.io)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.36-326CE5?logo=kubernetes)](https://kubernetes.io)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 
 ![Three-Tier Banner](assets/Three-Tier.gif)
@@ -124,10 +125,11 @@ The project is organized into three application tiers and a supporting DevOps la
 | Category | Technology |
 |---|---|
 | Cloud Provider | AWS (EKS, ECR, ALB, EC2, VPC, S3) |
-| Infrastructure as Code | Terraform |
-| Container Orchestration | Kubernetes (AWS EKS) |
+| Infrastructure as Code | Terraform ≥ 1.15.0 |
+| Container Orchestration | Kubernetes 1.36 (AWS EKS) |
 | Image Registry | AWS ECR (Private) |
 | Load Balancer | AWS ALB + AWS Load Balancer Controller |
+| TF State Backend | S3 + native `use_lockfile` (no DynamoDB required) |
 
 ### CI/CD & GitOps
 
@@ -220,9 +222,27 @@ Open **http://localhost:3000** — the TaskFlow Kanban board should be running.
 
 ---
 
-### Step 2 — Provision the Jenkins Server
+### Step 2 — Bootstrap Terraform State Backend
 
-Use Terraform to spin up a pre-configured EC2 instance with Jenkins, Docker, Trivy, and all required tools installed automatically.
+Before provisioning any infrastructure, create the S3 buckets used as Terraform remote state backends:
+
+```powershell
+# Jenkins state bucket
+aws s3api create-bucket --bucket sanket-jenkins-tf-bucket --region us-east-1
+aws s3api put-bucket-versioning --bucket sanket-jenkins-tf-bucket --versioning-configuration Status=Enabled
+
+# EKS state bucket
+aws s3api create-bucket --bucket dev-sanket-tf-bucket --region us-east-1
+aws s3api put-bucket-versioning --bucket dev-sanket-tf-bucket --versioning-configuration Status=Enabled
+```
+
+> 💡 Both backends use `use_lockfile = true` (S3-native locking). No DynamoDB tables are required.
+
+---
+
+### Step 3 — Provision the Jenkins Server
+
+Use Terraform to spin up a pre-configured EC2 instance (`t2.2xlarge`) with Jenkins, Docker, SonarQube, Trivy, kubectl, eksctl, Helm, AWS CLI, and Terraform installed automatically via `tools-install.sh`.
 
 ```bash
 cd Infrastructure-Provisioning/Jenkins-Server-TF
@@ -236,9 +256,9 @@ Access Jenkins at `http://<EC2_PUBLIC_IP>:8080`
 
 ---
 
-### Step 3 — Provision the AWS EKS Cluster
+### Step 4 — Provision the AWS EKS Cluster
 
-Use Terraform (or the Jenkins EKS pipeline) to create a production-ready Kubernetes cluster on AWS.
+Use Terraform (or the Jenkins EKS pipeline `Jenkinsfile-EKS`) to create a production-ready Kubernetes **1.36** cluster on AWS.
 
 ```bash
 cd Infrastructure-Provisioning/EKS-Cluster-TF
@@ -249,7 +269,7 @@ terraform apply -var-file=dev.tfvars -auto-approve
 Update your kubeconfig:
 
 ```bash
-aws eks update-kubeconfig --region us-east-1 --name Three-Tier-Cluster
+aws eks update-kubeconfig --region us-east-1 --name eks-cluster
 kubectl get nodes
 ```
 
@@ -257,7 +277,7 @@ kubectl get nodes
 
 ---
 
-### Step 4 — Configure Jenkins CI/CD Pipelines
+### Step 5 — Configure Jenkins CI/CD Pipelines
 
 Set up three Jenkins pipelines using the Jenkinsfiles in this repository:
 
@@ -271,9 +291,10 @@ Set up three Jenkins pipelines using the Jenkinsfiles in this repository:
 
 ---
 
-### Step 5 — Deploy to Kubernetes
+### Step 6 — Deploy to Kubernetes
 
-Apply the manifests to create all workloads in the `three-tier` namespace:
+Apply the manifests to create all workloads in the `three-tier` namespace.
+The ALB Ingress exposes the app at **`devopswithsanket.space`**:
 
 ```bash
 kubectl create namespace three-tier
@@ -281,13 +302,16 @@ kubectl apply -f Kubernetes-Manifests-file/Database/ -n three-tier
 kubectl apply -f Kubernetes-Manifests-file/Backend/ -n three-tier
 kubectl apply -f Kubernetes-Manifests-file/Frontend/ -n three-tier
 kubectl apply -f Kubernetes-Manifests-file/ingress.yaml -n three-tier
+
+# Get ALB DNS and point your domain CNAME to it
+kubectl get ingress -n three-tier
 ```
 
 📖 Full guide → [Kubernetes Deployment](./docs/05-kubernetes-deployment.md)
 
 ---
 
-### Step 6 — Set Up ArgoCD (GitOps)
+### Step 7 — Set Up ArgoCD (GitOps)
 
 Install ArgoCD on the cluster and create apps that watch the `Kubernetes-Manifests-file/` directory. Every Jenkins build that updates a manifest tag will automatically be deployed to EKS.
 
@@ -300,7 +324,7 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 
 ---
 
-### Step 7 — Set Up Monitoring
+### Step 8 — Set Up Monitoring
 
 Deploy Prometheus and Grafana using Helm to get full cluster and application observability.
 

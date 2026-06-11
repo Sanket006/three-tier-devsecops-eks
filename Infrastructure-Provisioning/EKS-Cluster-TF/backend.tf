@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.15.5"
+  required_version = "~> 1.15.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -7,10 +7,10 @@ terraform {
     }
   }
   backend "s3" {
-    bucket         = "dev-aman-tf-bucket"
+    bucket         = "dev-sanket-tf-bucket"
     region         = "us-east-1"
-    key            = "eks/terraform.tfstate"
-    dynamodb_table = "Lock-Files"
+    key            = "End-to-End-Kubernetes-Three-Tier-DevSecOps-Project/EKS-Cluster-TF/terraform.tfstate"
+    use_lockfile   = true
     encrypt        = true
   }
 }

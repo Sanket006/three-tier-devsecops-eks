@@ -33,10 +33,11 @@ The project is organized into three distinct tiers:
 - **Axios** — HTTP client for API communication
 
 ### Infrastructure & Cloud
-- **AWS EKS** — Managed Kubernetes cluster
+- **AWS EKS** — Managed Kubernetes cluster (v1.36)
 - **AWS ECR** — Private Docker image registry
 - **AWS ALB** — Application Load Balancer (via ingress)
-- **Terraform** — Infrastructure as Code for AWS provisioning
+- **Terraform ≥ 1.15.0** — Infrastructure as Code for AWS provisioning
+- **S3 + `use_lockfile`** — Remote state backend (no DynamoDB needed)
 
 ### DevOps & CI/CD
 - **Jenkins** — CI/CD automation server
@@ -116,12 +117,13 @@ AWS ALB Ingress → End User
 
 Before getting started, ensure you have the following:
 
-- **AWS Account** with IAM permissions for EKS, ECR, EC2, and VPC
-- **AWS CLI** installed and configured
-- **Terraform** v1.0+ installed
-- **kubectl** installed
+- **AWS Account** with IAM permissions for EKS, ECR, EC2, VPC, and S3
+- **AWS CLI v2** installed and configured
+- **Terraform ≥ 1.15.0** installed
+- **kubectl** installed (v1.36 recommended)
 - **Docker** installed and running
 - **Git** installed
+- **EC2 Key Pair** created in `us-east-1`
 
 ---
 
