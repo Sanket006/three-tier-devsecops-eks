@@ -47,10 +47,42 @@ Kubernetes-Manifests-file/
 
 ---
 
-## Step 1 — Install the AWS Load Balancer Controller
+## Step 1 — Configure AWS Load Balancer Controller
 
-The ALB Ingress requires the AWS Load Balancer Controller to be installed:
+The ALB Ingress requires the AWS Load Balancer Controller to be installed. The controller interacts with the AWS API to provision and manage the Application Load Balancer (ALB).
 
+Follow these steps to set up the IAM policy, IAM role, service account, and Helm release:
+
+### 1. Download the IAM Policy
+Download the official IAM policy for the AWS Load Balancer Controller:
+```bash
+curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.11.0/docs/install/iam_policy.json
+```
+
+### 2. Create the IAM Policy in AWS
+Create the IAM policy using the AWS CLI:
+```bash
+aws iam create-policy \
+    --policy-name AWSLoadBalancerControllerIAMPolicy \
+    --policy-document file://iam_policy.json
+```
+> 💡 Take note of the returned Policy ARN (e.g. `arn:aws:iam::<AWS_ACCOUNT_ID>:policy/AWSLoadBalancerControllerIAMPolicy`). You will need it in the next step.
+
+### 3. Create the IAM Service Account via `eksctl`
+This step creates an AWS IAM Role, associates it with the EKS cluster's OIDC provider, and creates the Kubernetes ServiceAccount `aws-load-balancer-controller` in the `kube-system` namespace annotated with the Role ARN:
+```bash
+eksctl create iamserviceaccount \
+  --cluster=eks-cluster \
+  --namespace=kube-system \
+  --name=aws-load-balancer-controller \
+  --role-name AmazonEKSLoadBalancerControllerRole \
+  --attach-policy-arn=arn:aws:iam::<AWS_ACCOUNT_ID>:policy/AWSLoadBalancerControllerIAMPolicy \
+  --approve
+```
+> ⚠️ **Note:** Replace `<AWS_ACCOUNT_ID>` with your 12-digit AWS Account ID.
+
+### 4. Install the AWS Load Balancer Controller via Helm
+Now, install the controller using Helm, pointing it to the existing ServiceAccount you just created:
 ```bash
 # Add the EKS Helm chart repo
 helm repo add eks https://aws.github.io/eks-charts
@@ -63,6 +95,13 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   --set serviceAccount.create=false \
   --set serviceAccount.name=aws-load-balancer-controller
 ```
+
+### 5. Verify the Installation
+Check that the deployment was successfully created and the pods are running:
+```bash
+kubectl get deployment -n kube-system aws-load-balancer-controller
+```
+You should see output indicating that the controller deployment is healthy.
 
 ---
 
