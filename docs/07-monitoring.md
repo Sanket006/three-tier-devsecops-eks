@@ -47,14 +47,14 @@ kubectl create namespace monitoring
 
 ---
 
-## Step 3 — Install the Prometheus Stack
+## Step 3 — Install the Prometheus Stack (with Grafana disabled)
 
-The `kube-prometheus-stack` Helm chart bundles Prometheus, Grafana, and Alertmanager together:
+Install the `kube-prometheus-stack` Helm chart but disable the built-in Grafana since we are installing it separately:
 
 ```bash
 helm install prometheus prometheus-community/kube-prometheus-stack \
   --namespace monitoring \
-  --set grafana.enabled=true \
+  --set grafana.enabled=false \
   --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
 ```
 
@@ -64,23 +64,30 @@ Verify the installation:
 kubectl get pods -n monitoring
 ```
 
-Expected pods:
+---
+
+## Step 4 — Install Grafana Separately
+
+Install the standalone Grafana Helm chart in the same namespace:
+
+```bash
+helm install grafana grafana/grafana --namespace monitoring
 ```
-prometheus-grafana-...                      Running
-prometheus-kube-prometheus-operator-...    Running
-prometheus-kube-state-metrics-...          Running
-prometheus-prometheus-node-exporter-...    Running (one per node)
-alertmanager-prometheus-kube-prometheus-... Running
+
+Verify that the Grafana pod is running:
+
+```bash
+kubectl get pods -n monitoring -l app.kubernetes.io/name=grafana
 ```
 
 ---
 
-## Step 4 — Access the Grafana Dashboard
+## Step 5 — Access the Grafana Dashboard
 
 ### Option A — Port Forward (Quick Access)
 
 ```bash
-kubectl port-forward svc/prometheus-grafana 3001:80 -n monitoring
+kubectl port-forward svc/grafana 3001:80 -n monitoring
 ```
 
 Open your browser at `http://localhost:3001`
@@ -88,27 +95,48 @@ Open your browser at `http://localhost:3001`
 ### Option B — Expose via LoadBalancer
 
 ```bash
-kubectl patch svc prometheus-grafana -n monitoring \
+kubectl patch svc grafana -n monitoring \
   -p '{"spec": {"type": "LoadBalancer"}}'
 
-# Get the external IP
-kubectl get svc prometheus-grafana -n monitoring
+# Get the external IP / DNS Name
+kubectl get svc grafana -n monitoring
 ```
 
 ---
 
-## Step 5 — Log in to Grafana
+## Step 6 — Log in to Grafana
 
-| Field | Value |
-|---|---|
-| **Username** | `admin` |
-| **Password** | `prom-operator` (default) |
+Standalone Grafana generates a random password stored in a Kubernetes secret.
 
-> 💡 Change the password immediately after first login.
+1. Retrieve the password by running:
+   ```bash
+   kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+   ```
+2. Log in using the credentials:
+
+   | Field | Value |
+   |---|---|
+   | **Username** | `admin` |
+   | **Password** | *The decoded password from the step above* |
 
 ---
 
-## Step 6 — Explore Pre-Built Dashboards
+## Step 7 — Connect Grafana to Prometheus Data Source
+
+Since Grafana was installed separately, you need to manually connect it to Prometheus:
+
+1. Log in to Grafana.
+2. In the left-hand menu, navigate to **Connections** (or **Data Sources** under the gear icon) and click **Add data source**.
+3. Select **Prometheus**.
+4. In the **Connection URL** field, enter the Prometheus internal service address:
+   ```text
+   http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+   ```
+5. Scroll to the bottom and click **Save & Test**. You should see a green success notification indicating that the data source is working.
+
+---
+
+## Step 8 — Explore Pre-Built Dashboards
 
 The `kube-prometheus-stack` comes with pre-built dashboards. Navigate to:
 
@@ -126,7 +154,7 @@ Key dashboards to explore:
 
 ---
 
-## Step 7 — Access the Prometheus UI
+## Step 9 — Access the Prometheus UI
 
 ### Port Forward
 
@@ -154,17 +182,30 @@ kube_pod_container_status_restarts_total{namespace="three-tier"}
 
 ---
 
-## Step 8 — Import a Custom Dashboard (Optional)
+## Step 10 — Import a Custom Dashboard (Optional)
 
-1. Go to **Dashboards → Import**
-2. Enter a dashboard ID from [Grafana Dashboard Library](https://grafana.com/grafana/dashboards/):
-   - **15661** — Kubernetes Cluster Monitoring
-   - **12740** — Kubernetes Monitoring Dashboard
-3. Click **Load** → Select `Prometheus` as data source → **Import**
+You can import pre-configured community dashboards to visualize your EKS cluster and application stack without building panels from scratch:
+
+1. In Grafana, go to **Dashboards → New → Import**.
+2. Enter one of the following Dashboard IDs from the [Grafana Dashboard Library](https://grafana.com/grafana/dashboards/):
+
+   * **Cluster & Node Metrics:**
+     * **`1860`** — **Node Exporter Full** (Highly recommended: detailed CPU, memory, disk, network, and system stats for all EKS nodes).
+     * **`15661`** — **Kubernetes Cluster Monitoring** (Overview of cluster capacity, usage, pod counts, and resource limits).
+     * **`12740`** — **Kubernetes Monitoring Dashboard** (Visualizes workloads, pods, namespaces, and node statuses).
+
+   * **Workload & Container Metrics:**
+     * **`15760`** — **Kubernetes / Kube-State-Metrics** (Deep dive into pod health, replicas, restarts, CPU throttles, and memory limits).
+
+   * **Database Metrics (MongoDB):**
+     * **`16496`** — **MongoDB Dashboard** (Tracks database connections, memory usage, command operations, and throughput).
+
+3. Click **Load**.
+4. Select **Prometheus** as the data source in the dropdown, then click **Import**.
 
 ---
 
-## Step 9 — Set Up Alertmanager (Optional)
+## Step 11 — Set Up Alertmanager (Optional)
 
 Alertmanager handles alerts from Prometheus. Configure notification receivers (email, Slack, PagerDuty):
 
@@ -205,6 +246,7 @@ receivers:
 
 ```bash
 helm uninstall prometheus -n monitoring
+helm uninstall grafana -n monitoring
 kubectl delete namespace monitoring
 ```
 
