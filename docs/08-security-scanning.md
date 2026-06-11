@@ -72,6 +72,8 @@ docker run -d \
 Access the UI at `http://<JENKINS_SERVER_IP>:9000`  
 Default credentials: `admin` / `admin`
 
+![SonarQube Code Analysis](../assets/sonarqube-static-code-analysis.png)
+
 ### Configure Jenkins Integration
 
 1. In SonarQube, go to **Administration → Security → Users → Tokens**

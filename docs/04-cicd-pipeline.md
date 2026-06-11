@@ -105,6 +105,8 @@ aws ecr create-repository --repository-name backend --region us-east-1
 5. Set **Script Path** to `Jenkins-Pipeline-Code/Jenkinsfile-Frontend`
 6. Click **Save** and then **Build Now**
 
+![Frontend Pipeline](../assets/frontend-pipeline.png)
+
 ---
 
 ## Pipeline 2 — Backend CI/CD (`Jenkinsfile-Backend`)
@@ -119,6 +121,8 @@ The backend pipeline mirrors the frontend with the same stages, but operates on 
 4. Set **Credentials** to `GITHUB`
 5. Set **Script Path** to `Jenkins-Pipeline-Code/Jenkinsfile-Backend`
 6. Click **Save** and then **Build Now**
+
+![Backend Pipeline](../assets/backend-pipeline.png)
 
 ---
 
@@ -156,6 +160,8 @@ This pipeline lets you **provision, plan, or destroy** the AWS EKS cluster via a
 2. Set `Environment` = `dev`
 3. Set `Terraform_Action` = `apply`
 4. Click **Build**
+
+![EKS Infrastructure Pipeline](../assets/infa-pipeline.png)
 
 > ⚠️ Use `destroy` action only when you want to tear down the entire EKS cluster.
 

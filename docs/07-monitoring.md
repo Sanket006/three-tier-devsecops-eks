@@ -152,6 +152,9 @@ Key dashboards to explore:
 | **Kubernetes / Workloads** | Deployment, ReplicaSet health |
 | **Node Exporter / Full** | Host-level OS metrics |
 
+![Kubernetes Resource Monitoring](../assets/k8s-resource-monitoring.png)
+![Node Exporter Full Dashboard](../assets/node-exporter-full.png)
+
 ---
 
 ## Step 9 — Access the Prometheus UI

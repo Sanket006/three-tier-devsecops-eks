@@ -91,6 +91,8 @@ tf-mongodb    mongo:latest                Up   0.0.0.0:27017->27017/tcp
 | **Health Check** | http://localhost:3500/healthz |
 | **Readiness Check** | http://localhost:3500/ready |
 
+![TaskFlow Application](../assets/taskflow-application.png)
+
 ### Step 6 — View Logs (Optional)
 
 ```bash
