@@ -192,12 +192,15 @@ sum(rate(container_cpu_usage_seconds_total{namespace="three-tier"}[5m])) by (pod
 # Memory usage per pod
 sum(container_memory_usage_bytes{namespace="three-tier"}) by (pod)
 
-# HTTP requests per second to backend
-rate(http_requests_total{namespace="three-tier"}[5m])
+# Network bytes received per second by backend pods (Works out-of-the-box)
+sum(rate(container_network_receive_bytes_total{namespace="three-tier"}[5m])) by (pod)
 
 # Pod restart count
 kube_pod_container_status_restarts_total{namespace="three-tier"}
 ```
+
+> 💡 **Note on `http_requests_total`:**  
+> Custom application metrics (like HTTP request counts) require the application to be instrumented with a Prometheus client library (like `prom-client` for Node.js) to expose a `/metrics` endpoint. Since the current backend is not instrumented, application-level HTTP queries will return empty. Use network/container resource queries instead.
 
 ---
 
