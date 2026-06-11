@@ -36,10 +36,10 @@ Code Push → Checkout → SonarQube Analysis → OWASP Scan
   - AWS Pipeline Plugin (`pipeline-aws`)
   - NodeJS Plugin
 - Tools configured in **Jenkins → Manage Jenkins → Tools**:
-  - JDK: `jdk`
   - NodeJS: `nodejs`
   - SonarQube Scanner: `sonar-scanner`
   - OWASP Dependency-Check: `DP-Check`
+> 💡 *Note: JDK is not needed in Jenkins Tools configuration since the pipeline automatically uses the system's default Java 21 runtime installed on the server.*
 - SonarQube server running and accessible from Jenkins
 
 ---
@@ -158,6 +158,31 @@ This pipeline lets you **provision, plan, or destroy** the AWS EKS cluster via a
 4. Click **Build**
 
 > ⚠️ Use `destroy` action only when you want to tear down the entire EKS cluster.
+
+---
+
+## 🐙 Alternative: EKS Provisioning via GitHub Actions
+
+If you prefer to provision your EKS cluster directly from GitHub without using Jenkins, you can use the pre-configured GitHub Actions workflow located at [.github/workflows/terraform.yml](file:///../../.github/workflows/terraform.yml).
+
+### 1. Configure GitHub Secrets
+The workflow runs Terraform on a GitHub runner and authenticates using repo secrets.
+1. On your GitHub repository page, navigate to **Settings** → **Secrets and variables** → **Actions**.
+2. Click **New repository secret** and add the following two secrets:
+
+   | Secret Name | Value |
+   |---|---|
+   | `AWS_ACCESS_KEY_ID` | Your AWS Access Key ID |
+   | `AWS_SECRET_ACCESS_KEY` | Your AWS Secret Access Key |
+
+### 2. Run the Workflow
+This is a manual trigger workflow (`workflow_dispatch`).
+1. Click the **Actions** tab on your GitHub repository.
+2. Select the **EKS-Creation-Using-Terraform** workflow in the left sidebar.
+3. Click the **Run workflow** dropdown on the right:
+   * **Path to the .tfvars file:** `dev.tfvars` (default)
+   * **Terraform Action:** Choose `plan`, `apply`, or `destroy`
+4. Click the green **Run workflow** button to execute.
 
 ---
 

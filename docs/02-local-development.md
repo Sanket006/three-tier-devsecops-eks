@@ -79,7 +79,7 @@ Expected output:
 NAME          IMAGE                 STATUS         PORTS
 tf-frontend   application-code-frontend   Up   0.0.0.0:3000->3000/tcp
 tf-backend    application-code-backend    Up   0.0.0.0:3500->3500/tcp
-tf-mongodb    mongo:latest                Up   0.0.0.0:27018->27017/tcp
+tf-mongodb    mongo:latest                Up   0.0.0.0:27017->27017/tcp
 ```
 
 ### Step 5 — Access the Application

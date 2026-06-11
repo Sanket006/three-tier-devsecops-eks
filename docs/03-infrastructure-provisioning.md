@@ -39,7 +39,7 @@ Before starting, ensure the following are set up:
 ## Part 1 — Provision the Jenkins Server
 
 The Jenkins Server is an EC2 instance (`t2.2xlarge`, Ubuntu 22.04) provisioned with all required DevOps tools pre-installed via `tools-install.sh`, including:
-- Jenkins (latest stable), Docker, SonarQube (26.6.0-community), Trivy (latest), AWS CLI v2, kubectl (latest stable), eksctl (v0.227.0), Helm (v4.x), Terraform (v1.15.x)
+- Jenkins (latest stable), Java 21 (OpenJDK), Docker, SonarQube (26.6.0-community), Trivy (latest), AWS CLI v2, kubectl (latest stable), eksctl (v0.227.0), Helm (v4.x), Terraform (v1.15.x)
 
 ### Step 1 — Navigate to the Terraform Directory
 
