@@ -156,13 +156,32 @@ Key dashboards to explore:
 
 ## Step 9 — Access the Prometheus UI
 
-### Port Forward
+The Prometheus Server exposes a built-in Expression Browser interface to run queries, check target status, and view alert configurations.
+
+### Option A — Port Forward (Quick Access)
 
 ```bash
 kubectl port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090 -n monitoring
 ```
+> 💡 **No Namespace Note:** If you installed Prometheus in the default namespace, run:
+> `kubectl port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090`
 
-Open `http://localhost:9090`
+Open your browser at **`http://localhost:9090`**
+
+### Option B — Expose via LoadBalancer
+
+To access the Prometheus dashboard externally without port-forwarding:
+
+```bash
+kubectl patch svc prometheus-kube-prometheus-prometheus -n monitoring \
+  -p '{"spec": {"type": "LoadBalancer"}}'
+
+# Get the external IP / DNS name
+kubectl get svc prometheus-kube-prometheus-prometheus -n monitoring
+```
+> 💡 **No Namespace Note:** If installed in the default namespace, run:
+> `kubectl patch svc prometheus-kube-prometheus-prometheus -p '{"spec": {"type": "LoadBalancer"}}'`
+> `kubectl get svc prometheus-kube-prometheus-prometheus`
 
 ### Useful Prometheus Queries (PromQL)
 
