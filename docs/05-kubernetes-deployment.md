@@ -93,8 +93,15 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   -n kube-system \
   --set clusterName=eks-cluster \
   --set serviceAccount.create=false \
-  --set serviceAccount.name=aws-load-balancer-controller
+  --set serviceAccount.name=aws-load-balancer-controller \
+  --set region=<AWS_REGION> \
+  --set vpcId=<VPC_ID>
 ```
+
+> 💡 **Troubleshooting IMDSv2 / Metadata Timeout:**
+> If you see `unable to initialize AWS cloud: failed to get VPC ID` in the logs of the `aws-load-balancer-controller` pod, it means the pod cannot access the EC2 Instance Metadata Service (IMDSv2) due to hop-limit or routing restrictions. 
+> To bypass this, always specify the `region` and `vpcId` parameters explicitly in the Helm install/upgrade command (e.g. `--set region=us-east-1` and `--set vpcId=vpc-0xxxxxx`).
+
 
 ### 5. Verify the Installation
 Check that the deployment was successfully created and the pods are running:
