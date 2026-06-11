@@ -4,38 +4,11 @@ const cors = require("cors");
 const express = require("express");
 const app = express();
 const mongoose = require('mongoose');
-const promClient = require('prom-client');
-
-// Enable default metrics collection (CPU, Memory, etc.)
-promClient.collectDefaultMetrics();
-
-// Custom metrics
-const httpRequestsTotal = new promClient.Counter({
-    name: 'http_requests_total',
-    help: 'Total number of HTTP requests',
-    labelNames: ['method', 'route', 'status']
-});
 
 connection();
 
 app.use(express.json());
 app.use(cors());
-
-// Middleware to track HTTP requests
-app.use((req, res, next) => {
-    res.on('finish', () => {
-        const route = req.baseUrl || req.path;
-        // Skip scraping metrics endpoint itself to avoid noise
-        if (route !== '/metrics') {
-            httpRequestsTotal.inc({
-                method: req.method,
-                route: route,
-                status: res.statusCode
-            });
-        }
-    });
-    next();
-});
 
 // Health check endpoints
 
@@ -65,12 +38,6 @@ app.get('/ready', (req, res) => {
 app.get('/started', (req, res) => {
     // Assuming the server has started correctly if this endpoint is reachable
     res.status(200).send('Started');
-});
-
-// Metrics endpoint for Prometheus to scrape
-app.get('/metrics', async (req, res) => {
-    res.set('Content-Type', promClient.register.contentType);
-    res.end(await promClient.register.metrics());
 });
 
 app.use("/api/tasks", tasks);
