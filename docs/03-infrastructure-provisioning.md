@@ -198,19 +198,74 @@ terraform apply -var-file=dev.tfvars -auto-approve
 
 > ⏱️ This typically takes **10–15 minutes** to complete.
 
-### Step 7 — Configure kubectl
+### Step 7 — Configure Cluster Access (Jump Server / Bastion Host)
 
-After the cluster is created, update your local kubeconfig:
+Because the EKS cluster is provisioned with private-only endpoint access (`endpoint-private-access = true` and `endpoint-public-access = false`), you cannot run `kubectl` commands from your local machine directly. You must configure and use a **Jump Server (Bastion Host)** in the EKS VPC to access the cluster's private API server endpoint.
 
-```bash
-aws eks update-kubeconfig --region us-east-1 --name eks-cluster
-```
+#### 1. Provision the Jump Server
+1. Go to the AWS EC2 Console and launch a new instance:
+   - **Name**: `dev-ap-medium-jump-server`
+   - **AMI**: Ubuntu 22.04 LTS (or Amazon Linux 2023)
+   - **Instance Type**: `t3.micro` or `t3a.micro` (eligible for Free Tier)
+   - **Network Settings**:
+     - **VPC**: `dev-ap-medium-vpc` (the VPC created by the EKS Terraform stack)
+     - **Subnet**: Select one of the public subnets (e.g., `dev-ap-medium-subnet-public-1`)
+     - **Auto-assign public IP**: **Enable**
+     - **Security Group**: Create a new security group (`jump-server-sg`) that allows **SSH (Port 22)** restricted to **My IP** (your local machine's IP) for security.
+   - **Key Pair**: Select your existing key pair (e.g., `my-us-east-key-pair`).
 
-Verify the cluster nodes are ready:
+#### 2. Update EKS Security Group Inbound Rules
+To allow the Jump Server to communicate with the EKS API server:
+1. In the AWS Console, locate the Security Group for the EKS Cluster (named `eks-sg` in `dev.tfvars`).
+2. Add an **Inbound Rule**:
+   - **Type**: HTTPS (Port 443)
+   - **Source**: Select the security group of the Jump Server (`jump-server-sg`) or input its private IP (e.g., `10.16.x.x/32`).
+   - **Description**: `Allow 443 from Jump Server`
+   *(Note: The Terraform script defines `eks-cluster-sg` in `module/vpc.tf` allowing inbound HTTPS. Ensure this rule is locked down to the Jump Server's IP/security group for security instead of `0.0.0.0/0` in production environments).*
 
-```bash
-kubectl get nodes
-```
+#### 3. Install Tools & Configure kubeconfig on the Jump Server
+1. SSH into your Jump Server from your local machine:
+   ```bash
+   ssh -i your-key.pem ubuntu@<JUMP_SERVER_PUBLIC_IP>
+   ```
+2. Install the **AWS CLI** and configure it with your AWS credentials:
+   ```bash
+   sudo apt-get update && sudo apt-get install -y unzip curl
+   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+   unzip awscliv2.zip
+   sudo ./aws/install
+   aws configure
+   # Provide your AWS Access Key ID, Secret Access Key, Default Region (us-east-1), and Output format (json)
+   ```
+3. Install **kubectl**:
+   ```bash
+   curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+   sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+   ```
+4. Install **eksctl**:
+   ```bash
+   curl --silent --location "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+   sudo mv /tmp/eksctl /usr/local/bin
+   ```
+5. Update kubeconfig on the Jump Server (using the correct cluster name `dev-ap-medium-eks-cluster`):
+   ```bash
+   aws eks update-kubeconfig --region us-east-1 --name dev-ap-medium-eks-cluster
+   ```
+6. Verify access and tools:
+   ```bash
+   kubectl get nodes
+   eksctl version
+   ```
+   *If successful, you will see your cluster nodes and the installed eksctl version.*
+
+#### 4. Optional: Accessing the Private API Server Locally (SSH Tunneling)
+If you prefer running `kubectl` commands from your local machine, you can route the traffic through the Jump Server using local port forwarding:
+1. Establish the SSH tunnel:
+   ```bash
+   ssh -i your-key.pem -N -L 8443:<EKS_PRIVATE_API_ENDPOINT_URL>:443 ubuntu@<JUMP_SERVER_PUBLIC_IP>
+   ```
+   *(Retrieve `<EKS_PRIVATE_API_ENDPOINT_URL>` from EKS cluster details in AWS Console or `aws eks describe-cluster --name dev-ap-medium-eks-cluster`).*
+2. Update your local `~/.kube/config` to point to `https://localhost:8443` and disable TLS verification for local routing, or use `--insecure-skip-tls-verify` when running commands locally.
 
 ---
 

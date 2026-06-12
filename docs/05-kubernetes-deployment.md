@@ -20,9 +20,10 @@ The deployment includes:
 ## ✅ Prerequisites
 
 - EKS cluster provisioned and running (see [Infrastructure Provisioning](./03-infrastructure-provisioning.md))
-- `kubectl` configured to point to the EKS cluster:
+- **Cluster Access Configured**: Because the cluster endpoint is private, you must run all `kubectl` commands from your **Jump Server** (or via an SSH tunnel). Your `kubectl` context must point to the cluster:
   ```bash
-  aws eks update-kubeconfig --region us-east-1 --name eks-cluster
+  # Run this on your Jump Server
+  aws eks update-kubeconfig --region us-east-1 --name dev-ap-medium-eks-cluster
   kubectl get nodes   # Should show Running nodes
   ```
 - Docker images built and pushed to ECR (see [CI/CD Pipeline Setup](./04-cicd-pipeline.md))
@@ -71,8 +72,9 @@ aws iam create-policy \
 ### 3. Create the IAM Service Account via `eksctl`
 This step creates an AWS IAM Role, associates it with the EKS cluster's OIDC provider, and creates the Kubernetes ServiceAccount `aws-load-balancer-controller` in the `kube-system` namespace annotated with the Role ARN:
 ```bash
+# Run this on your Jump Server
 eksctl create iamserviceaccount \
-  --cluster=eks-cluster \
+  --cluster=dev-ap-medium-eks-cluster \
   --namespace=kube-system \
   --name=aws-load-balancer-controller \
   --role-name AmazonEKSLoadBalancerControllerRole \
