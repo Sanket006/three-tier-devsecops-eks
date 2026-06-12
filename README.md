@@ -439,6 +439,8 @@ Detailed step-by-step guides are available in the [`docs/`](./docs/) folder:
 | GitOps with ArgoCD | [docs/06-argocd-gitops.md](./docs/06-argocd-gitops.md) |
 | Monitoring & Observability | [docs/07-monitoring.md](./docs/07-monitoring.md) |
 | Security Scanning | [docs/08-security-scanning.md](./docs/08-security-scanning.md) |
+| Architecture Diagrams | [docs/09-architecture-diagrams.md](./docs/09-architecture-diagrams.md) |
+
 
 ---
 
