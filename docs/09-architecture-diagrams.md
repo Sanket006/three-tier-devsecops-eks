@@ -36,7 +36,7 @@ graph TB
         
         %% AWS Managed Services
         ECR[(📦 AWS ECR - Image Registry)]
-        S3[(🪣 AWS S3 - Terraform State)]
+        S3[(🪣 AWS S3 - EKS TF State)]
     end
 
     %% Flow connections
@@ -49,7 +49,8 @@ graph TB
     
     %% Pipeline & Infrastructure Management
     Jenkins -->|Provision & Destroy Cluster| EKS_VPC
-    Jenkins -->|Store State File| S3
+    Jenkins -->|"Store EKS TF State"| S3
+    S3 -.->|"EKS Infra State"| EKS_Cluster
     Jenkins -->|Build & Push Images| ECR
     WorkerNodes -->|Pull Container Images| ECR
 
@@ -59,25 +60,19 @@ graph TB
     classDef compute fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#9a3412;
     classDef storage fill:#ecfdf5,stroke:#059669,stroke-width:2px,color:#065f46;
     classDef security fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
-    classDef vpc fill:none,stroke:#0284c7,stroke-width:3px,stroke-dasharray: 5 5,color:#0284c7;
-    classDef subnet fill:#f8fafc,stroke:#64748b,stroke-width:2px,stroke-dasharray: 3 3,color:#334155;
-    classDef eks fill:#f0f9ff,stroke:#0284c7,stroke-width:2px,color:#1e3a8a;
 
     class User,DevOps,Route53 external;
     class ALB network;
     class JumpServer,Jenkins,WorkerNodes compute;
     class ECR,S3 storage;
     class ControlPlane security;
-    class Jenkins_VPC,EKS_VPC vpc;
-    class Public_Subnet,Private_Subnet subnet;
-    class EKS_Cluster eks;
 ```
 
 ### 📋 AWS Workflow Explanation:
 1. **Domain Name System Resolution**: When the **🖥️ End User** enters the application URL (e.g., `devopswithsanket.space`), the request goes to **🌐 AWS Route 53**, which resolves the domain and directs traffic to the application's entry point.
 2. **Traffic Distribution**: The request is captured by the public-facing **⚖️ AWS Application Load Balancer (ALB)** sitting inside the **🟢 Public Subnet**. The ALB decrypts SSL/TLS traffic (if configured) and forwards HTTP requests to the private worker nodes.
 3. **Private Execution Environment**: The core workloads run on **💻 EC2 Worker Nodes** residing inside the **🔒 Private Subnet** within the **☸️ AWS EKS Cluster**. These nodes have no direct internet access, protecting them from direct web attacks.
-4. **CI/CD Management**: The **🤖 Jenkins Server (EC2)** resides in its own VPC (**Jenkins-vpc**). It orchestrates cluster deployment and teardown using Terraform, communicating with the AWS APIs to provision the EKS VPC and its resources. Jenkins saves the configuration state files in the secure **🪣 AWS S3** bucket and pushes compiled application Docker image artifacts to **📦 AWS ECR**.
+4. **CI/CD Management**: The **🤖 Jenkins Server (EC2)** resides in its own VPC (**Jenkins-vpc**). It orchestrates cluster deployment and teardown using Terraform, communicating with the AWS APIs to provision the EKS VPC and its resources. Jenkins saves the EKS cluster Terraform state files in the secure **🪣 AWS S3** bucket and pushes compiled application Docker image artifacts to **📦 AWS ECR**.
 5. **Secure Administrative Entry**: Because the EKS cluster uses private API endpoints for the control plane, administrative commands cannot run from the public internet. The **👤 DevOps / Admin** must SSH into the **🖥️ Jump Server (Bastion Host)** in the Public Subnet, using it as a proxy to run `kubectl` commands against the **🧠 EKS Control Plane**.
 
 ---
