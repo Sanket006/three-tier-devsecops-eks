@@ -41,23 +41,23 @@ graph TB
     end
 
     %% Flow connections
-    User -->|1. Request devopswithsanket.space| Route53
-    Route53 -->|2. Route Traffic| ALB
-    ALB -->|"3. Forward Request (Port 80/443)"| WorkerNodes
-    DevOps -->|"4. Secure SSH Tunnel (Port 22)"| JumpServer
-    JumpServer -->|"5. Manage Cluster (kubectl)"| ControlPlane
-    ControlPlane -->|Orchestrate Pods| WorkerNodes
     
-    %% DevOps provisioning Jenkins Server
-    DevOps -->|"Store Jenkins TF State"| S3_Jenkins
-    DevOps -->|Provision Jenkins Server| Jenkins_VPC
+    %% Phase A: Infrastructure & App Delivery Flow
+    DevOps -->|"1. Provision Jenkins Server (Terraform CLI)"| Jenkins_VPC
+    DevOps -->|"2. Store Jenkins TF State"| S3_Jenkins
+    Jenkins -->|"3. Provision EKS Cluster (Terraform Pipeline)"| EKS_VPC
+    Jenkins -->|"4. Store EKS TF State"| S3_EKS
+    S3_EKS -.->|"5. EKS Cluster State"| EKS_Cluster
+    Jenkins -->|"6. Build & Push Images"| ECR
+    WorkerNodes -->|"7. Pull Container Images"| ECR
 
-    %% Pipeline & Infrastructure Management
-    Jenkins -->|Provision & Destroy Cluster| EKS_VPC
-    Jenkins -->|"Store EKS TF State"| S3_EKS
-    S3_EKS -.->|"EKS Infra State"| EKS_Cluster
-    Jenkins -->|Build & Push Images| ECR
-    WorkerNodes -->|Pull Container Images| ECR
+    %% Phase B: Traffic & Administration Flow
+    User -->|"8. Request devopswithsanket.space"| Route53
+    Route53 -->|"9. Route Traffic"| ALB
+    ALB -->|"10. Forward Request (Port 80/443)"| WorkerNodes
+    DevOps -->|"11. Secure SSH Tunnel (Port 22)"| JumpServer
+    JumpServer -->|"12. Manage Cluster (kubectl)"| ControlPlane
+    ControlPlane -->|Orchestrate Pods| WorkerNodes
 
     %% Formatting / Class Definitions for premium look
     classDef external fill:#eef2f7,stroke:#94a3b8,stroke-width:2px,color:#0f172a,stroke-dasharray: 5 5;
@@ -74,11 +74,22 @@ graph TB
 ```
 
 ### 📋 AWS Workflow Explanation:
-1. **Domain Name System Resolution**: When the **🖥️ End User** enters the application URL (e.g., `devopswithsanket.space`), the request goes to **🌐 AWS Route 53**, which resolves the domain and directs traffic to the application's entry point.
-2. **Traffic Distribution**: The request is captured by the public-facing **⚖️ AWS Application Load Balancer (ALB)** sitting inside the **🟢 Public Subnet**. The ALB decrypts SSL/TLS traffic (if configured) and forwards HTTP requests to the private worker nodes.
-3. **Private Execution Environment**: The core workloads run on **💻 EC2 Worker Nodes** residing inside the **🔒 Private Subnet** within the **☸️ AWS EKS Cluster**. These nodes have no direct internet access, protecting them from direct web attacks.
-4. **CI/CD Management**: The **🤖 Jenkins Server (EC2)** resides in its own VPC (**Jenkins-vpc**). It orchestrates cluster deployment and teardown using Terraform, communicating with the AWS APIs to provision the EKS VPC and its resources. Jenkins saves the EKS cluster Terraform state files in the secure **🪣 AWS S3 (dev-sanket-tf-bucket)**, while the initial Jenkins server infrastructure state is stored in the **🪣 AWS S3 (sanket-jenkins-tf-bucket)**. Jenkins also pushes compiled application Docker image artifacts to **📦 AWS ECR**.
-5. **Secure Administrative Entry**: Because the EKS cluster uses private API endpoints for the control plane, administrative commands cannot run from the public internet. The **👤 DevOps / Admin** must SSH into the **🖥️ Jump Server (Bastion Host)** in the Public Subnet, using it as a proxy to run `kubectl` commands against the **🧠 EKS Control Plane**.
+
+#### 🏗️ Phase A: Infrastructure Provisioning & App Delivery
+1. **Provision Jenkins Server**: The **👤 DevOps / Admin** provisions the **🤖 Jenkins Server (EC2)** in its own VPC (**Jenkins-vpc**) using the Terraform CLI.
+2. **Store Jenkins State**: The Terraform state file for the Jenkins server is stored securely in **🪣 AWS S3 (sanket-jenkins-tf-bucket)**.
+3. **Provision EKS Cluster**: Jenkins executes automated Terraform scripts to provision the **☸️ AWS EKS Cluster** and its EKS VPC network (**dev-ap-medium-vpc**).
+4. **Store EKS State**: The Terraform state file for the EKS cluster is stored in **🪣 AWS S3 (dev-sanket-tf-bucket)**.
+5. **EKS Cluster State Reference**: The state file continuously maintains the structural metadata of the deployed **☸️ AWS EKS Cluster**.
+6. **Build & Push Images**: Jenkins compiles the application code, runs security scans, builds Docker images, and pushes them to **📦 AWS ECR**.
+7. **Pull Images**: The **💻 Worker Nodes** inside the EKS cluster pull these Docker images from ECR to run the application containers.
+
+#### 🌐 Phase B: Application Traffic & Administration
+8. **Domain Resolution**: An **🖥️ End User** requests the application (e.g. `devopswithsanket.space`). **🌐 AWS Route 53** resolves the domain and routes traffic to the public subnet.
+9. **Traffic Routing**: The request is routed to the public-facing **⚖️ AWS Application Load Balancer (ALB)**.
+10. **Forward Request**: The ALB forwards the incoming user request (over port 80/443) to the private **💻 Worker Nodes** running the frontend/backend pods.
+11. **Secure SSH Tunneling**: For administrative tasks, the **👤 DevOps / Admin** initiates a secure SSH connection (over port 22) to the **🖥️ Jump Server (Bastion Host)** in the public subnet.
+12. **Manage Cluster**: Using the Jump Server as a proxy, the administrator runs `kubectl` commands to securely manage the private **🧠 EKS Control Plane**.
 
 ---
 
